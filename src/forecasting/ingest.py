@@ -14,9 +14,12 @@ def parse_eia_response(payload: dict) -> pd.DataFrame:
     """
     records = payload.get("response", {}).get("data", [])
     if not records:
-        return pd.DataFrame({c: pd.Series(dtype="object") for c in PARSED_COLUMNS}).astype(
-            {"value": "float64"}
-        ).assign(period=lambda d: pd.to_datetime(d["period"], utc=True))
+        return (
+            pd.DataFrame({c: pd.Series(dtype="object") for c in PARSED_COLUMNS})
+            .astype({"value": "float64"})
+            .assign(period=lambda d: pd.to_datetime(d["period"], utc=True))
+            .astype({"period": "datetime64[ns, UTC]"})
+        )
 
     df = pd.DataFrame(records)
     out = pd.DataFrame(

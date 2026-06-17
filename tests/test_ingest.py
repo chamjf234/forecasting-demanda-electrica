@@ -59,3 +59,4 @@ def test_parse_eia_response_empty(sample_eia_payload):
     df = ingest.parse_eia_response(empty)
     assert list(df.columns) == ["period", "respondent", "value"]
     assert len(df) == 0
+    assert str(df["period"].dtype) == "datetime64[ns, UTC]"
