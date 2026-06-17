@@ -1,9 +1,19 @@
 """Lectura/escritura del histórico de demanda con disciplina de snapshot."""
+import math
 from pathlib import Path
 
 import pandas as pd
 
 from forecasting.config import DEMAND_COLUMNS
+
+
+def _values_equal(a: float, b: float) -> bool:
+    """Compara valores tolerando NaN y ruido de punto flotante."""
+    if math.isnan(a) and math.isnan(b):
+        return True          # seguía faltando → no es revisión
+    if math.isnan(a) or math.isnan(b):
+        return False         # cambió de/a NaN → sí es revisión
+    return math.isclose(a, b, rel_tol=1e-9)
 
 
 def _empty_history() -> pd.DataFrame:
@@ -34,6 +44,7 @@ def upsert_demand(path: Path, observations: pd.DataFrame, now: pd.Timestamp) -> 
     Devuelve conteos: {"inserted", "revised", "unchanged"}.
     """
     path = Path(path)
+    observations = observations.drop_duplicates(subset=["period", "respondent"], keep="last")
     history = read_demand_history(path)
     existing = {
         (r.period, r.respondent): r for r in history.itertuples(index=False)
@@ -56,7 +67,7 @@ def upsert_demand(path: Path, observations: pd.DataFrame, now: pd.Timestamp) -> 
                     "last_updated_at": now,
                 }
             )
-        elif float(obs.value) != prev.value_current:
+        elif not _values_equal(float(obs.value), prev.value_current):
             counts["revised"] += 1
             rows.append(
                 {
