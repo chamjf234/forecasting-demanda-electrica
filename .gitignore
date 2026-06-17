@@ -1,0 +1,17 @@
+# Entornos
+.venv/
+venv/
+__pycache__/
+*.pyc
+
+# Secrets
+.env
+
+# Caches de herramientas
+.pytest_cache/
+.ruff_cache/
+
+# Modelos de HuggingFace descargados (Chronos) — se bajan en runtime
+.cache/
+
+# NOTA: data/ NO se ignora. El histórico versionado es la prueba del loop vivo.

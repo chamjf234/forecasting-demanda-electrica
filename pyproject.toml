@@ -1,0 +1,9 @@
+[project]
+name = "forecasting-demanda-electrica"
+version = "0.1.0"
+description = "Servicio vivo de forecasting de demanda eléctrica horaria (EIA)"
+requires-python = ">=3.11"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["src"]
