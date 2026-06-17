@@ -1,5 +1,8 @@
 """Ingesta de demanda horaria desde la API v2 de la EIA."""
 import pandas as pd
+import requests
+
+from forecasting.config import DEMAND_TYPE, EIA_BASE_URL
 
 PARSED_COLUMNS = ["period", "respondent", "value"]
 
@@ -28,3 +31,43 @@ def parse_eia_response(payload: dict) -> pd.DataFrame:
         }
     )
     return out[PARSED_COLUMNS]
+
+
+def fetch_demand(
+    respondent: str,
+    start: str,
+    end: str,
+    api_key: str,
+    page_length: int = 5000,
+) -> pd.DataFrame:
+    """Trae demanda horaria (type=D) de la EIA para [start, end], paginando.
+
+    start/end en formato "YYYY-MM-DDTHH" (UTC). Devuelve DataFrame normalizado.
+    """
+    frames = []
+    offset = 0
+    while True:
+        params = {
+            "api_key": api_key,
+            "frequency": "hourly",
+            "data[0]": "value",
+            "facets[respondent][]": respondent,
+            "facets[type][]": DEMAND_TYPE,
+            "start": start,
+            "end": end,
+            "sort[0][column]": "period",
+            "sort[0][direction]": "asc",
+            "offset": offset,
+            "length": page_length,
+        }
+        resp = requests.get(EIA_BASE_URL, params=params, timeout=60)
+        resp.raise_for_status()
+        payload = resp.json()
+        frames.append(parse_eia_response(payload))
+
+        total = int(payload.get("response", {}).get("total", 0))
+        offset += page_length
+        if offset >= total:
+            break
+
+    return pd.concat(frames, ignore_index=True)
