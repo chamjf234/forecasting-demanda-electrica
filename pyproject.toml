@@ -4,6 +4,14 @@ version = "0.1.0"
 description = "Servicio vivo de forecasting de demanda eléctrica horaria (EIA)"
 requires-python = ">=3.11"
 
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools]
+package-dir = {"" = "src"}
+packages = ["forecasting"]
+
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 pythonpath = ["src"]
