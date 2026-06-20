@@ -14,6 +14,7 @@ EIA_BASE_URL = "https://api.eia.gov/v2/electricity/rto/region-data/data/"
 # Rutas de datos versionados.
 DATA_DIR = Path("data")
 DEMAND_HISTORY_PATH = DATA_DIR / "demand_history.parquet"
+PREDICTIONS_PATH = DATA_DIR / "predictions.parquet"
 
 # Schema del histórico de demanda. Todas las horas en UTC.
 DEMAND_COLUMNS = [
