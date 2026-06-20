@@ -1,3 +1,4 @@
+import numpy as np
 import pandas as pd
 import pytest
 
@@ -36,3 +37,19 @@ def sample_eia_payload():
             ],
         }
     }
+
+
+@pytest.fixture
+def synthetic_hourly_history():
+    """4 semanas de demanda horaria sintética con estacionalidad diaria+semanal.
+
+    Sin ruido → la serie se repite exactamente cada 168 h, así seasonal naive
+    es perfecto y los demás modelos tienen una señal limpia que aprender.
+    """
+    n = 24 * 28  # 4 semanas
+    idx = pd.date_range("2025-01-01", periods=n, freq="h", tz="UTC")
+    h = np.arange(n)
+    daily = 10 * np.sin(2 * np.pi * h / 24)
+    weekly = 5 * np.sin(2 * np.pi * h / 168)
+    value = 100 + daily + weekly
+    return pd.DataFrame({"period": idx, "value": value})
