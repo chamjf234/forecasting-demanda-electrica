@@ -57,3 +57,37 @@ def test_evaluate_predictions_inner_join_drops_unmatched():
     preds = _predictions(future, "A", [1.0, 2.0])
     out = backtest.evaluate_predictions(preds, hist)
     assert len(out) == 0
+
+
+class PerfectModel:
+    """Predice el valor real exacto leyendo de un lookup (para test determinista)."""
+    name = "perfect"
+
+    def __init__(self, lookup):
+        self._lookup = lookup
+
+    def predict(self, history, horizon):
+        last = history["period"].iloc[-1]
+        future = pd.date_range(last + pd.Timedelta(hours=1), periods=horizon, freq="h")
+        return pd.DataFrame(
+            {"period": future, "model": self.name,
+             "prediction": [self._lookup[p] for p in future]}
+        )
+
+
+def test_rolling_origin_backtest_aggregates_over_origins():
+    n = 24 * 10
+    idx = pd.date_range("2025-01-01", periods=n, freq="h", tz="UTC")
+    values = np.arange(n, dtype=float)
+    hist = pd.DataFrame(
+        {"period": idx, "respondent": "PJM",
+         "value_first_reported": values, "value_current": values,
+         "first_seen_at": idx, "last_updated_at": idx}
+    )
+    lookup = dict(zip(idx, values))
+    model = PerfectModel(lookup)
+    origins = [idx[24 * 7], idx[24 * 8]]
+    out = backtest.rolling_origin_backtest(hist, [model], origins, horizon=24)
+    row = out.set_index("model").loc["perfect"]
+    assert row["mae"] == 0.0
+    assert row["n"] == 48
