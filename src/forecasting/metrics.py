@@ -14,5 +14,7 @@ def smape(y_true, y_pred) -> float:
     yt = np.asarray(y_true, dtype=float)
     yp = np.asarray(y_pred, dtype=float)
     denom = np.abs(yt) + np.abs(yp)
-    contrib = np.where(denom == 0, 0.0, 2 * np.abs(yp - yt) / denom)
+    # División segura: solo divide donde denom != 0; el resto queda en 0 (sin warning).
+    contrib = np.zeros_like(denom)
+    np.divide(2 * np.abs(yp - yt), denom, out=contrib, where=denom != 0)
     return float(np.mean(contrib) * 100)
