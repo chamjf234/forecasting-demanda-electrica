@@ -1,5 +1,7 @@
 # Servicio vivo de forecasting de demanda eléctrica
 
+**🔴 Demo en vivo:** https://forecasting-demanda-electrica-vksx6ueygoucdhwzvoordf.streamlit.app/
+
 Pronóstico de **demanda eléctrica horaria** (región PJM, EE.UU.) servido como un
 sistema que **se mantiene y monitorea solo**. Cada día un cron de GitHub Actions
 ingiere datos frescos de la [EIA](https://www.eia.gov/opendata/), pronostica las
