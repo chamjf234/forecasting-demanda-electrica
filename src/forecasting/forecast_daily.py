@@ -5,16 +5,21 @@ from pathlib import Path
 import pandas as pd
 from dotenv import load_dotenv
 
-from forecasting import predictions, store
+from forecasting import predictions, series, store
 from forecasting.config import DEMAND_HISTORY_PATH, PREDICTIONS_PATH
 from forecasting.predictions import PREDICTION_COLUMNS
 
 
 def _as_series(history: pd.DataFrame) -> pd.DataFrame:
-    """Convierte el histórico del store a la serie limpia (period, value) que usan los modelos."""
-    return pd.DataFrame(
+    """Convierte el histórico del store a la serie limpia (period, value) que usan los modelos.
+
+    Regulariza a grilla horaria contigua: los datos de la EIA tienen huecos que
+    romperían a los modelos basados en lags/posición (ver forecasting.series).
+    """
+    raw = pd.DataFrame(
         {"period": history["period"], "value": history["value_current"]}
     )
+    return series.regularize_hourly(raw)
 
 
 def run_forecast(history: pd.DataFrame, models, as_of: pd.Timestamp, horizon: int = 24):

@@ -1,7 +1,7 @@
 """Evaluación de forecasts en dos regímenes: forward-test y backtest histórico."""
 import pandas as pd
 
-from forecasting import metrics
+from forecasting import metrics, series
 
 
 def _metrics_by_model(df: pd.DataFrame) -> pd.DataFrame:
@@ -44,14 +44,16 @@ def rolling_origin_backtest(
     """Backtest histórico (optimista): para cada origin corta el histórico, corre los
     modelos y compara contra el valor real (revisado). Agrega MAE/sMAPE por modelo.
     """
-    series = pd.DataFrame(
-        {"period": history["period"], "value": history[actual_col]}
+    # Serie regularizada (huecos interpolados) como entrada de los modelos;
+    # los reales para evaluar se mantienen sobre los datos observados originales.
+    model_input = series.regularize_hourly(
+        pd.DataFrame({"period": history["period"], "value": history[actual_col]})
     )
     actual_lookup = dict(zip(history["period"], history[actual_col]))
 
     records = []
     for origin in origins:
-        sliced = series[series["period"] <= origin].reset_index(drop=True)
+        sliced = model_input[model_input["period"] <= origin].reset_index(drop=True)
         for model in models:
             try:
                 fc = model.predict(sliced, horizon)
