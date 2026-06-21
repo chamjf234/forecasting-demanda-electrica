@@ -27,10 +27,12 @@ def evaluate_predictions(
     Une por target_period == period. Inner join: predicciones sin real (futuro aún
     no observado) se descartan.
     """
-    actuals = history[["period", actual_col]].rename(
-        columns={"period": "target_period", actual_col: "actual"}
-    )
-    merged = predictions.merge(actuals, on="target_period", how="inner")
+    # Limpia los valores reales (centinelas/outliers de la EIA) antes de medir:
+    # un "real" basura (p.ej. 2.1e9) inflaría el error de todos los modelos.
+    clean = series.regularize_hourly(
+        pd.DataFrame({"period": history["period"], "value": history[actual_col]})
+    ).rename(columns={"period": "target_period", "value": "actual"})
+    merged = predictions.merge(clean, on="target_period", how="inner")
     return _metrics_by_model(merged)
 
 
@@ -44,12 +46,13 @@ def rolling_origin_backtest(
     """Backtest histórico (optimista): para cada origin corta el histórico, corre los
     modelos y compara contra el valor real (revisado). Agrega MAE/sMAPE por modelo.
     """
-    # Serie regularizada (huecos interpolados) como entrada de los modelos;
-    # los reales para evaluar se mantienen sobre los datos observados originales.
+    # Serie limpia y regularizada (outliers y huecos tratados): se usa tanto como
+    # entrada de los modelos como para los valores reales de la evaluación, así la
+    # basura de la EIA no corrompe ni el entrenamiento ni las métricas.
     model_input = series.regularize_hourly(
         pd.DataFrame({"period": history["period"], "value": history[actual_col]})
     )
-    actual_lookup = dict(zip(history["period"], history[actual_col]))
+    actual_lookup = dict(zip(model_input["period"], model_input["value"]))
 
     records = []
     for origin in origins:
