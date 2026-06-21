@@ -1,0 +1,8 @@
+# Dependencias pesadas de los modelos de forecasting.
+# NO las necesita el dashboard; sí el cron (GitHub Actions), los tests y el desarrollo local.
+# Instalar junto con las base:  pip install -r requirements.txt -r requirements-models.txt
+lightgbm>=4.0
+scikit-learn>=1.4
+statsforecast>=1.7
+torch>=2.2
+chronos-forecasting>=1.4
