@@ -1,4 +1,13 @@
 """Dashboard del servicio de forecasting de demanda eléctrica (Streamlit)."""
+import sys
+from pathlib import Path
+
+# Streamlit Cloud no corre `pip install -e .`, así que el paquete `forecasting`
+# (layout src/) no es importable por defecto. Añadimos src/ al path para que el
+# deploy funcione sin instalación editable. En local con `pip install -e .` esto
+# es inocuo (el path ya resuelve).
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "src"))
+
 import pandas as pd
 import streamlit as st
 
