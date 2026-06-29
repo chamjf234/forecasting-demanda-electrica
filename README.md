@@ -135,6 +135,14 @@ Streamlit Community Cloud (free tier) no podía instalar **PyTorch** (cientos de
 de `requirements-models.txt` (torch, lightgbm, statsforecast, chronos — solo para
 CI/cron/local). El dashboard no importa ninguna librería pesada.
 
+### 🐛 5. SARIMAX agotaba la memoria del runner (OOM en CI)
+El job semanal de SARIMAX moría en GitHub Actions con *exit code 143* (SIGTERM):
+`AutoARIMA` ajustando sobre ~48 000 horas (5 años) agotaba la RAM del runner gratuito.
+**Solución:** acotar la ventana de entrenamiento de SARIMAX a 90 días — para un
+forecast a 24 h, la dinámica reciente es lo que importa. El ajuste pasó de "sin
+memoria" a ~9 s, sin perder calidad. Decisión de ingeniería clásica: el modelo no
+necesita *toda* la historia, solo la suficiente.
+
 ---
 
 ## Stack tecnológico
