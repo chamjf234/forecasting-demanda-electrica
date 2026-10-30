@@ -1,6 +1,13 @@
 # ⚡ Servicio vivo de forecasting de demanda eléctrica
 
 **🔴 Demo en vivo:** https://forecasting-demanda-electrica-vksx6ueygoucdhwzvoordf.streamlit.app/
+(Streamlit la duerme por inactividad: si ves "Zzzz", pulsa el botón y carga en menos de un minuto.)
+
+**English summary.** A self-maintaining service that forecasts hourly PJM electricity demand. Every
+day a GitHub Actions cron ingests EIA data, forecasts the next 24 h with four models (seasonal naive,
+SARIMAX with Fourier terms, LightGBM, Chronos-Bolt) and scores the previous day's forecast, with
+leakage-safe backtesting. In a rolling-origin backtest LightGBM reaches about 4.5% sMAPE against 9.4%
+for seasonal naive.
 
 Pronóstico de **demanda eléctrica horaria** (región **PJM**, EE.UU.) servido como un
 sistema que **se mantiene y se monitorea solo**. Cada día, un cron de GitHub Actions
